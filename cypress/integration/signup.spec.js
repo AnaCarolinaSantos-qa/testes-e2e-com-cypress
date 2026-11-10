@@ -5,7 +5,7 @@ it('shows the confirmation prompt after a signup request', () => {
   const emailAddress = `signup-${faker.datatype.uuid()}@example.test`
   const password = Cypress.env('USER_PASSWORD')
 
-  cy.intercept('POST', '**/signup', {
+  cy.intercept('POST', '**', {
     statusCode: 200,
     body: {}
   }).as('signup')
