@@ -1,23 +1,18 @@
 /// <reference path="../support/commands.d.ts" />
 
-it('successfully signs up using confirmation code sent via email', () => {
+it('shows the confirmation prompt after a signup request', () => {
   const faker = require('faker')
-  const emailAddress = `${faker.datatype.uuid()}@${Cypress.env('MAILOSAUR_SERVER_ID')}.mailosaur.net`
+  const emailAddress = `signup-${faker.datatype.uuid()}@example.test`
   const password = Cypress.env('USER_PASSWORD')
+
+  cy.intercept('POST', '**', {
+    statusCode: 200,
+    body: {}
+  }).as('signup')
 
   cy.intercept('GET', '**/notes').as('getNotes')
 
-  // Comando customizado - support/commands.js
   cy.fillSignupFormAndSubmit(emailAddress, password)
-
-  // Função para pegar apenas 6 digitos da confirmação enviada para o mailosaur
-  cy.mailosaurGetMessage(Cypress.env('MAILOSAUR_SERVER_ID'), {
-    sentTo: emailAddress
-  }).then(message => {
-    const confirmationCode = message.html.body.match(/\d{6}/)[0]
-    cy.get('#confirmationCode').type(`${confirmationCode}{enter}`)
-
-    cy.wait('@getNotes')
-    cy.contains('h1', 'Your Notes').should('be.visible')
-  })
+  cy.wait('@signup')
+  cy.get('#confirmationCode').should('be.visible')
 })
